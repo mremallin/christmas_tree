@@ -1,4 +1,5 @@
-CFLAGS=-Wall -Wpedantic
+CFLAGS=-Wall -Wpedantic `sdl2-config --cflags`
+LIBRARIES=`sdl2-config --libs`
 
 .DEFAULT_GOAL := all
 
@@ -6,7 +7,7 @@ christmas_tree.o: christmas_tree.c
 	gcc $(CFLAGS) -c -o $@ $<
 
 christmas_tree: christmas_tree.o
-	gcc -o $@ $^
+	gcc -o $@ $^ $(LIBRARIES)
 
 all: christmas_tree
 
