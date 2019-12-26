@@ -1,0 +1,16 @@
+CFLAGS=-Wall -Wpedantic
+
+.DEFAULT_GOAL := all
+
+christmas_tree.o: christmas_tree.c
+	gcc $(CFLAGS) -c -o $@ $<
+
+christmas_tree: christmas_tree.o
+	gcc -o $@ $^
+
+all: christmas_tree
+
+.PHONY: christmas_tree
+
+clean:
+	rm -f *.o christmas_tree || true
