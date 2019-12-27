@@ -6,6 +6,8 @@
 #define GL_GLEXT_PROTOTYPES 1
 #include <SDL2/SDL_opengl.h>
 
+#include "shader.h"
+
 /* Variables related to SDL window and rendering */
 static SDL_Window 		*main_window = NULL;
 static SDL_Renderer 	*main_renderer = NULL;
@@ -45,6 +47,8 @@ get_gl_context (void)
 static void
 at_exit (void)
 {
+	deinit_shaders();
+
 	if (get_gl_context()) {
 		SDL_GL_DeleteContext(get_gl_context());
 	}
@@ -185,6 +189,7 @@ main (int argc, char *argv[])
 	init_sdl();
 	init_opengl();
 	allocate_opengl_objects();
+	initialize_shaders();
 
 	clear_window();
     run_main_event_loop();
