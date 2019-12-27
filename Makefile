@@ -1,5 +1,5 @@
-CFLAGS=-Wall -Wpedantic `sdl2-config --cflags`
-LIBRARIES=`sdl2-config --libs`
+CFLAGS=-Wall -Wpedantic $(shell sdl2-config --cflags)
+LIBRARIES=$(shell sdl2-config --libs)
 
 .DEFAULT_GOAL := all
 
