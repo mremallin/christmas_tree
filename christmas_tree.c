@@ -14,6 +14,8 @@ static SDL_Window 		*main_window = NULL;
 static SDL_Renderer 	*main_renderer = NULL;
 static SDL_GLContext 	*main_opengl_context = NULL;
 
+#define ERROR_LOG(...) (fprintf(stderr, __VA_ARGS__))
+
 static SDL_Window *
 get_window (void)
 {
@@ -69,7 +71,7 @@ init_opengl (void)
 
 	main_opengl_context = SDL_GL_CreateContext(get_window());
 	if (main_opengl_context == NULL) {
-		fprintf(stderr, "SDL_GL_CreateContext failed: %s\n", SDL_GetError());
+		ERROR_LOG("SDL_GL_CreateContext failed: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 }
@@ -95,7 +97,7 @@ run_main_event_loop (void)
 	bool loop = true;
 
 	printf("Entering main loop\n");
-	
+
 	while (loop) {
 		SDL_Event event;
 
@@ -130,7 +132,7 @@ init_sdl (void)
 	main_window = SDL_CreateWindow("Christmas Tree", 100, 100, 640, 480,
 								   SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	if (main_window == NULL) {
-		fprintf(stderr, "SDL_CreateWindow failed: %s\n", SDL_GetError());
+		ERROR_LOG("SDL_CreateWindow failed: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
@@ -138,7 +140,7 @@ init_sdl (void)
 									   -1 /* Use the first one that matches the given flags */,
 									   SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (main_renderer == NULL) {
-		fprintf(stderr, "SDL_CreateRenderer failed: %s\n", SDL_GetError());
+		ERROR_LOG("SDL_CreateRenderer failed: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 }
