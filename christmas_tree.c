@@ -2,19 +2,27 @@
 #include <stdbool.h>
 #include <assert.h>
 
-/* Modern Mac OS has deprecated Open GL... */
-#define GL_SILENCE_DEPRECATION
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-
 #include <SDL2/SDL.h>
+#define GL_GLEXT_PROTOTYPES 1
 #include <SDL2/SDL_opengl.h>
 
+/* Variables related to SDL window and rendering */
 static SDL_Window 		*main_window = NULL;
 static SDL_Renderer 	*main_renderer = NULL;
 static SDL_GLContext 	*main_opengl_context = NULL;
 
+/* Variables related to GPU data */
+static GLuint 			 vbo_id_light_point[1] = {0};
+static GLuint		     vao_id_light_point[1] = {0};
+static GLuint			 vap_id_light_point[1] = {0};
+
+/* The vertex where the light point originates from */
+static GLfloat			 light_point[] = {
+	0.0f, 0.0f, 0.0f
+};
+
 #define ERROR_LOG(...) (fprintf(stderr, __VA_ARGS__))
+#define ELEMENTS_IN_ARRAY(_array) (sizeof((_array))/sizeof((_array[0])))
 
 static SDL_Window *
 get_window (void)
@@ -62,6 +70,29 @@ set_opengl_attributes (void)
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	/* Synchronize buffer swap with monitor V-Sync */
 	SDL_GL_SetSwapInterval(1);
+}
+
+static void
+allocate_opengl_objects (void)
+{
+	/* These calls generate the Vertex Buffer Object (VBO) for GPU usage */
+	glGenBuffers(ELEMENTS_IN_ARRAY(vbo_id_light_point),
+				 vbo_id_light_point);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(light_point), light_point, GL_STATIC_DRAW);
+
+	/* These calls generate the Vertex Array Object (VAO), made up of VBOs */
+	glGenVertexArrays(ELEMENTS_IN_ARRAY(vao_id_light_point),
+					  vao_id_light_point);
+	glBindVertexArray(vao_id_light_point[0]);
+
+	/* These calls generate the vertex attribute pointer data */
+	glVertexAttribPointer(vap_id_light_point[0], ELEMENTS_IN_ARRAY(light_point),
+						  GL_FLOAT, GL_FALSE /* Normalized data */,
+						  0 /* Stride, spacing between vertex attributes */,
+						  NULL /* Extra data pointer */);
+
+	glEnableVertexAttribArray(vap_id_light_point[0]);
 }
 
 static void
@@ -153,6 +184,7 @@ main (int argc, char *argv[])
 
 	init_sdl();
 	init_opengl();
+	allocate_opengl_objects();
 
 	clear_window();
     run_main_event_loop();
