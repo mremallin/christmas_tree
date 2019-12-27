@@ -125,7 +125,7 @@ init_sdl (void)
 
 	rc = SDL_Init(SDL_INIT_VIDEO);
 	if (rc != 0) {
-		fprintf(stderr, "SDL_Init failed (%u): %s\n", rc, SDL_GetError());
+		ERROR_LOG("SDL_Init failed (%u): %s\n", rc, SDL_GetError());
 		exit(rc);
 	}
 
