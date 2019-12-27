@@ -33,6 +33,7 @@ run_main_event_loop (void)
 {
 	bool loop = true;
 
+	/* NOTE: This is currently a very busy loop. 100% CPU at the moment */
 	while (loop) {
 		SDL_Event event;
 
