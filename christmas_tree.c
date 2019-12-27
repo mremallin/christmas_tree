@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 #include <SDL2/SDL.h>
 
@@ -7,24 +8,40 @@ static SDL_Renderer 	*main_renderer = NULL;
 static SDL_GLContext 	*main_opengl_context = NULL;
 
 static SDL_Window *
-get_window(void)
+get_window (void)
 {
 	return main_window;
 }
 
 static SDL_Renderer *
-get_renderer(void)
+get_renderer (void)
 {
 	return main_renderer;
 }
 
 static void
-set_opengl_attributes(void)
+set_opengl_attributes (void)
 {
 	/* Taken from http://headerphile.com/sdl2/opengl-part-1-sdl-opengl-awesome/ */
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+}
+
+static void
+run_main_event_loop (void)
+{
+	bool loop = true;
+
+	while (loop) {
+		SDL_Event event;
+
+		while (SDL_PollEvent(&event)) {
+			if (event.type == SDL_QUIT) {
+				loop = false;
+			}
+		}
+	}
 }
 
 int
@@ -67,8 +84,13 @@ main (int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+    SDL_SetRenderDrawColor(get_renderer(), 0, 0, 0, 255);
+    SDL_RenderClear(get_renderer());
+    SDL_GL_SwapWindow(get_window());
+    SDL_RenderPresent(get_renderer());
+
 	printf("Christmas tree goes here!\n");
-	SDL_Delay(5000);
+    run_main_event_loop();
 
 	SDL_GL_DeleteContext(main_opengl_context);
 	SDL_DestroyRenderer(get_renderer());
