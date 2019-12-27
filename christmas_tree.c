@@ -95,12 +95,12 @@ run_main_event_loop (void)
 	bool loop = true;
 
 	printf("Entering main loop\n");
-	/* NOTE: This is currently a very busy loop. 100% CPU at the moment */
+	
 	while (loop) {
 		SDL_Event event;
 
 		/* Process incoming events */
-		while (SDL_PollEvent(&event)) {
+		if (SDL_WaitEvent(&event) != 0) {
 			if (event.type == SDL_QUIT) {
 				loop = false;
 			}
