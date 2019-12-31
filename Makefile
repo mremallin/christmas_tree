@@ -11,7 +11,5 @@ christmas_tree: christmas_tree.o shader.o
 
 all: christmas_tree
 
-.PHONY: christmas_tree
-
 clean:
 	rm -f *.o christmas_tree || true
