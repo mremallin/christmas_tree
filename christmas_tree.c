@@ -16,6 +16,9 @@ static SDL_GLContext 	*main_opengl_context = NULL;
 static GLuint 			 vbo_id_light_point[1] = {0};
 static GLuint 			 vao_id_light_point[1] = {0};
 
+static GLfloat 			 projection_matrix[4*4];
+static GLfloat 			 modelview_matrix[4*4];
+
 /* The vertex where the light point originates from */
 static GLfloat			 light_point[] = {
 	0.0f, 0.0f, 0.0f
@@ -101,6 +104,9 @@ init_opengl (void)
 
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glEnable(GL_DEPTH_TEST);
+
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelview_matrix);
+	glGetFloatv(GL_PROJECTION_MATRIX, projection_matrix);
 }
 
 static void
