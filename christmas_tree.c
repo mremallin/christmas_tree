@@ -13,14 +13,8 @@ static SDL_Window 		*main_window = NULL;
 static SDL_GLContext 	*main_opengl_context = NULL;
 
 /* Variables related to GPU data */
-typedef enum {
-	VBO_VERTEX = 0,
-	VBO_COLOR,
-	VBO_MAX
-} vbo_meanings;
-
-static GLuint 			 vbo_id_light_point[VBO_MAX] = {0};
-static GLuint 			 vao_id_light_point[VBO_MAX] = {0};
+static GLuint 			 vbo_id_light_point[1] = {0};
+static GLuint 			 vao_id_light_point[1] = {0};
 
 /* The vertex where the light point originates from */
 static GLfloat			 light_point[] = {
@@ -78,16 +72,16 @@ allocate_opengl_objects (void)
 	/* These calls generate the Vertex Buffer Object (VBO) for GPU usage */
 	glGenBuffers(ELEMENTS_IN_ARRAY(vbo_id_light_point),
 				 vbo_id_light_point);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[VBO_VERTEX]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(light_point), light_point, GL_STATIC_DRAW);
 
 	glGenVertexArrays(ELEMENTS_IN_ARRAY(vao_id_light_point),
 					  vao_id_light_point);
-	glBindVertexArray(vao_id_light_point[VBO_VERTEX]);
+	glBindVertexArray(vao_id_light_point[0]);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[VBO_VERTEX]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[0]);
 	glVertexAttribPointer(get_vertex_attribute(),
 						  ELEMENTS_IN_ARRAY(light_point),
 					      GL_FLOAT, GL_FALSE, 0, 0);
