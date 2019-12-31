@@ -1,4 +1,4 @@
-CFLAGS=-Wall -Wpedantic $(shell sdl2-config --cflags)
+CFLAGS=-Wall -Wpedantic $(shell sdl2-config --cflags) -g
 LIBRARIES=$(shell sdl2-config --libs) -framework OpenGL
 
 .DEFAULT_GOAL := all

@@ -10,13 +10,17 @@
 
 /* Variables related to SDL window and rendering */
 static SDL_Window 		*main_window = NULL;
-static SDL_Renderer 	*main_renderer = NULL;
 static SDL_GLContext 	*main_opengl_context = NULL;
 
 /* Variables related to GPU data */
-static GLuint 			 vbo_id_light_point[1] = {0};
-static GLuint		     vao_id_light_point[1] = {0};
-static GLuint			 vap_id_light_point[1] = {0};
+typedef enum {
+	VBO_VERTEX = 0,
+	VBO_COLOR,
+	VBO_MAX
+} vbo_meanings;
+
+static GLuint 			 vbo_id_light_point[VBO_MAX] = {0};
+static GLuint 			 vao_id_light_point[VBO_MAX] = {0};
 
 /* The vertex where the light point originates from */
 static GLfloat			 light_point[] = {
@@ -32,12 +36,6 @@ get_window (void)
 	return main_window;
 }
 
-static SDL_Renderer *
-get_renderer (void)
-{
-	return main_renderer;
-}
-
 static SDL_GLContext *
 get_gl_context (void)
 {
@@ -49,12 +47,10 @@ at_exit (void)
 {
 	deinit_shaders();
 
+	glDeleteBuffers(ELEMENTS_IN_ARRAY(vbo_id_light_point), vbo_id_light_point);
+
 	if (get_gl_context()) {
 		SDL_GL_DeleteContext(get_gl_context());
-	}
-
-	if (get_renderer()) {
-		SDL_DestroyRenderer(get_renderer());
 	}
 
 	if (get_window()) {
@@ -82,21 +78,20 @@ allocate_opengl_objects (void)
 	/* These calls generate the Vertex Buffer Object (VBO) for GPU usage */
 	glGenBuffers(ELEMENTS_IN_ARRAY(vbo_id_light_point),
 				 vbo_id_light_point);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[VBO_VERTEX]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(light_point), light_point, GL_STATIC_DRAW);
 
-	/* These calls generate the Vertex Array Object (VAO), made up of VBOs */
 	glGenVertexArrays(ELEMENTS_IN_ARRAY(vao_id_light_point),
 					  vao_id_light_point);
-	glBindVertexArray(vao_id_light_point[0]);
+	glBindVertexArray(vao_id_light_point[VBO_VERTEX]);
 
-	/* These calls generate the vertex attribute pointer data */
-	glVertexAttribPointer(vap_id_light_point[0], ELEMENTS_IN_ARRAY(light_point),
-						  GL_FLOAT, GL_FALSE /* Normalized data */,
-						  0 /* Stride, spacing between vertex attributes */,
-						  NULL /* Extra data pointer */);
+	glEnableClientState(GL_VERTEX_ARRAY);
 
-	glEnableVertexAttribArray(vap_id_light_point[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[VBO_VERTEX]);
+	glVertexAttribPointer(get_vertex_attribute(),
+						  ELEMENTS_IN_ARRAY(light_point),
+					      GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(get_vertex_attribute());
 }
 
 static void
@@ -109,21 +104,33 @@ init_opengl (void)
 		ERROR_LOG("SDL_GL_CreateContext failed: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
+
+	glEnable(GL_PROGRAM_POINT_SIZE);
 }
 
 static void
 clear_window (void)
 {
-    SDL_SetRenderDrawColor(get_renderer(), 0, 0, 0, 255);
-    SDL_RenderClear(get_renderer());
+	/* Clear both rendering buffers to black */
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
     SDL_GL_SwapWindow(get_window());
-    SDL_RenderPresent(get_renderer());
+
+    glClear(GL_COLOR_BUFFER_BIT);
+    SDL_GL_SwapWindow(get_window());
 }
 
 static void
 render_frame (void)
 {
+	glClear(GL_COLOR_BUFFER_BIT);
 
+	/* Render here */
+	glBindVertexArray(vao_id_light_point[0]);
+	glPointSize(10.0f);
+	glDrawArrays(GL_POINTS, 0, 1);
+
+	//glDisableVertexAttribArray(get_vertex_attribute());
 }
 
 static void
@@ -147,7 +154,7 @@ run_main_event_loop (void)
 		render_frame();
 
 		/* Move the rendered buffer to the screen */
-		SDL_RenderPresent(get_renderer());
+		SDL_GL_SwapWindow(get_window());
 	}
 
 	printf("Exiting...\n");
@@ -170,14 +177,6 @@ init_sdl (void)
 		ERROR_LOG("SDL_CreateWindow failed: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
-
-	main_renderer = SDL_CreateRenderer(get_window(),
-									   -1 /* Use the first one that matches the given flags */,
-									   SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-	if (main_renderer == NULL) {
-		ERROR_LOG("SDL_CreateRenderer failed: %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
-	}
 }
 
 int
@@ -188,8 +187,8 @@ main (int argc, char *argv[])
 
 	init_sdl();
 	init_opengl();
-	allocate_opengl_objects();
 	initialize_shaders();
+	allocate_opengl_objects();
 
 	clear_window();
     run_main_event_loop();
