@@ -120,11 +120,12 @@ render_frame (void)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	/* Render here */
+	glEnableVertexAttribArray(get_vertex_attribute());
 	glBindVertexArray(vao_id_light_point[0]);
 	glPointSize(10.0f);
 	glDrawArrays(GL_POINTS, 0, 1);
 
-	//glDisableVertexAttribArray(get_vertex_attribute());
+	glDisableVertexAttribArray(get_vertex_attribute());
 }
 
 static void
