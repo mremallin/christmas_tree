@@ -8,6 +8,7 @@
 #include <SDL2/SDL_opengl.h>
 
 #include <cglm/cglm.h>
+#include <cglm/io.h>
 
 #include "shader.h"
 
@@ -20,7 +21,7 @@ static GLuint 			 vbo_id_light_point[1] = {0};
 static GLuint 			 vao_id_light_point[1] = {0};
 
 /* Using perspective projection */
-static GLfloat 			 projection_matrix[4*4] = {0};
+static mat4 projection_matrix;
 
 /* Just the identity matrix for now. */
 static mat4 modelview_matrix = {
@@ -105,23 +106,9 @@ allocate_opengl_objects (void)
 
 	/* Upload constant data to the shader */
 	glUniformMatrix4fv(get_vertex_uniform_projection(),
-					   1, GL_FALSE, projection_matrix);
+					   1, GL_FALSE, (GLfloat *)projection_matrix);
 	glUniformMatrix4fv(get_vertex_uniform_modelview(),
 					   1, GL_FALSE, (GLfloat *)modelview_matrix);
-}
-
-static void
-dump_matrix (GLfloat *matrix)
-{
-	int i, j;
-
-	for (i = 0; i < 4; i++) {
-		for (j = 0; j < 4; j++) {
-			printf("%f ", matrix[4*i + j]);
-		}
-		printf("\n");
-	}
-	printf("\n");
 }
 
 /*
@@ -170,7 +157,7 @@ init_opengl (void)
 	glEnable(GL_PROGRAM_POINT_SIZE);
 
 	generate_projection_matrix();
-	dump_matrix(projection_matrix);
+	glm_mat4_print(projection_matrix, stdout);
 }
 
 static void
