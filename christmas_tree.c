@@ -14,7 +14,7 @@
 
 /* Variables related to SDL window and rendering */
 static SDL_Window 		*main_window = NULL;
-static SDL_GLContext 	*main_opengl_context = NULL;
+static SDL_GLContext 	main_opengl_context = NULL;
 
 /* Variables related to GPU data */
 static GLuint 			 vbo_id_light_point[1] = {0};
@@ -24,14 +24,14 @@ static mat4 projection_matrix;
 static mat4 view_matrix;
 
 /* The vertex where the light point originates from */
-#define NUM_SLICES 		(50)
+#define NUM_SLICES 		(300)
 /* Where to stop the tree at the top */
 #define Y_MAX			(2.0f)
 /* Number of rotations around the tree before hitting y-max */
 #define NUM_ROTATIONS 	(4)
 /* Time taken for a single point to go from bottom of the tree
  * to the top */
-#define Y_TIME_MS		(10000)
+#define Y_TIME_MS		(50000)
 /* delta y per unit time */
 #define Y_SPEED			((Y_MAX) / Y_TIME_MS)
 
@@ -46,7 +46,7 @@ get_window (void)
 	return main_window;
 }
 
-static SDL_GLContext *
+static SDL_GLContext
 get_gl_context (void)
 {
 	return main_opengl_context;
@@ -55,20 +55,21 @@ get_gl_context (void)
 static void
 at_exit (void)
 {
-	deinit_shaders();
-
-	glDeleteBuffers(ELEMENTS_IN_ARRAY(vbo_id_light_point), vbo_id_light_point);
-
-	if (light_points) {
-		free(light_points);
-	}
-
-	if (get_gl_context()) {
-		SDL_GL_DeleteContext(get_gl_context());
-	}
-
 	if (get_window()) {
+		deinit_shaders();
+
+		glDeleteBuffers(ELEMENTS_IN_ARRAY(vbo_id_light_point), vbo_id_light_point);
+
+		if (light_points) {
+			free(light_points);
+		}
+
+		if (get_gl_context()) {
+			SDL_GL_DeleteContext(get_gl_context());
+		}
+
 		SDL_DestroyWindow(get_window());
+		main_window = NULL;
 	}
 
 	SDL_Quit();
@@ -317,6 +318,8 @@ main (int argc, char *argv[])
 
 	clear_window();
     run_main_event_loop();
+
+    at_exit();
 
 	return EXIT_SUCCESS;
 }
