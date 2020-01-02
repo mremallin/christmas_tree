@@ -105,6 +105,7 @@ allocate_opengl_objects (void)
  * https://www.3dgep.com/understanding-the-view-matrix/#The_View_Matrix
  * https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/opengl-perspective-projection-matrix 
  * https://solarianprogrammer.com/2013/05/22/opengl-101-matrices-projection-view-model/
+ * https://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/#transformation-matrices
  */
 
 static void
