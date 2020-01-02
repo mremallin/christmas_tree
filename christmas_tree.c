@@ -127,8 +127,6 @@ init_opengl (void)
 	}
 
 	glEnable(GL_PROGRAM_POINT_SIZE);
-
-	generate_projection_matrix();
 }
 
 static void
@@ -210,6 +208,7 @@ main (int argc, char *argv[])
 
 	init_sdl();
 	init_opengl();
+	generate_projection_matrix();
 	initialize_shaders();
 	allocate_opengl_objects();
 
