@@ -24,8 +24,16 @@ static mat4 projection_matrix;
 static mat4 view_matrix;
 
 /* The vertex where the light point originates from */
-#define NUM_SLICES 	100
-#define Y_MAX		2.0f
+#define NUM_SLICES 		(100)
+/* Where to stop the tree at the top */
+#define Y_MAX			(2.0f)
+/* Number of rotations around the tree before hitting y-max */
+#define NUM_ROTATIONS 	(3)
+/* Time taken for a single point to go from bottom of the tree
+ * to the top */
+#define Y_TIME_MS		(10000)
+#define Y_SPEED			((Y_MAX) / Y_TIME_MS)
+
 static vec4 *light_points;
 
 #define ERROR_LOG(...) (fprintf(stderr, __VA_ARGS__))
@@ -49,6 +57,10 @@ at_exit (void)
 	deinit_shaders();
 
 	glDeleteBuffers(ELEMENTS_IN_ARRAY(vbo_id_light_point), vbo_id_light_point);
+
+	if (light_points) {
+		free(light_points);
+	}
 
 	if (get_gl_context()) {
 		SDL_GL_DeleteContext(get_gl_context());
@@ -80,7 +92,7 @@ allocate_opengl_objects (void)
 	glGenBuffers(ELEMENTS_IN_ARRAY(vbo_id_light_point),
 				 vbo_id_light_point);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(light_points[0]) * NUM_SLICES, light_points, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(light_points[0]) * NUM_SLICES, light_points, GL_DYNAMIC_DRAW);
 
 	glGenVertexArrays(ELEMENTS_IN_ARRAY(vao_id_light_point),
 					  vao_id_light_point);
@@ -118,10 +130,27 @@ generate_projection_matrix(void)
 
 /* This represents the bounding cone for the tree */
 static float
-get_x_for_point (float y)
+get_r_for_point (float y)
 {
-	/* ( y - b ) / m = x */
+	/* ( y - b ) / m = r */
 	return (y - 2) / -2.0f;
+}
+
+static void
+update_point (vec4 point)
+{
+	float r_clamp = get_r_for_point(point[1]);
+
+	/* Each one also gets rotated around the trunk.
+	 * 3 rotations from start to finish should make a decent tree.
+	 * The radius calculated above is the distance from the trunk
+	 * the point must be. Need to turn the radius into an (x, z)
+	 * coordinate to have it around the tree. Starting from
+	 * y=0, want the spiral to also start from x=1 -> cos(3x) to
+	 * know the x-component of the vertex.
+	 */
+	point[0] = r_clamp * cosf(NUM_ROTATIONS * 2.0f * point[1]);
+	point[2] = r_clamp * sinf(NUM_ROTATIONS * 2.0f * point[1]);
 }
 
 static void
@@ -135,12 +164,13 @@ generate_points(void)
 		exit(EXIT_FAILURE);
 	}
 
-	/* Start each one at a given y-value */
+	/* Initialize each poin making up the spiral */
 	for (i = 0; i < NUM_SLICES; i++) {
+		/* Start each one at a given y-value */
 		light_points[i][1] = (Y_MAX/NUM_SLICES) * i;
-		light_points[i][0] = get_x_for_point(light_points[i][1]);
-		light_points[i][2] = 0.0f;
 		light_points[i][3] = 1.0f;
+
+		update_point(light_points[i]);
 	}
 }
 
@@ -177,13 +207,22 @@ update_frame (uint32_t delta_ms)
 	 * 1) Slice up the y-axis into discrete steps. Each one has a single point
 	 *	  in it's plane (or n points eqidistant from each other)
 	 * 2) Based on which slice this is, that determines how far away (r)
-	 *		from the y-axis the point is (r=mx+b) to find the bounding cone
+	 *		from the y-axis the point is (r = (y-b)/m) to find the bounding cone
 	 *      of the spiral.
 	 *    Each slice also is at a different position on the circle from the
 	 *      ones surrounding it.
 	 * 3) Each time step, update the points to move along the y-axis. Once
 	 *      a given point has surpassed a y-max, reset it to y=0 and continue.
 	 */
+	size_t i;
+
+	for (i = 0; i < NUM_SLICES; i++) {
+		light_points[i][1] += Y_SPEED * delta_ms;
+		if (light_points[i][1] > Y_MAX) {
+			light_points[i][1] = 0.0f;
+		}
+		update_point(light_points[i]);
+	}
 }
 
 static void
@@ -191,7 +230,8 @@ render_frame (void)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	/* Render here */
+	/* Update the GPU with latest vertex data */
+	glBufferData(GL_ARRAY_BUFFER, sizeof(light_points[0]) * NUM_SLICES, light_points, GL_DYNAMIC_DRAW);
 	glEnableVertexAttribArray(get_vertex_attribute());
 	glBindVertexArray(vao_id_light_point[0]);
 	glDrawArrays(GL_POINTS, 0, NUM_SLICES);
@@ -219,8 +259,10 @@ run_main_event_loop (void)
 
 		frame_start_ticks = SDL_GetTicks();
 
-		/* Process incoming events */
-		if (SDL_WaitEvent(&event) != 0) {
+		/* Process incoming events.
+		 * NOTE: This will chew up 100% CPU, need to find a better way
+		 * in order to not be busy while waiting to update. */
+		if (SDL_PollEvent(&event) != 0) {
 			if (event.type == SDL_QUIT) {
 				loop = false;
 			}
