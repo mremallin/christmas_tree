@@ -24,11 +24,9 @@ static mat4 projection_matrix;
 static mat4 view_matrix;
 
 /* The vertex where the light point originates from */
-static vec4 light_point[] = {
-	{0.0f, 0.0f, 0.0f, 1.0f},
-	{0.5f, 0.0f, 0.0f, 1.0f},
-	{0.5f, 0.5f, 0.0f, 1.0f},
-};
+#define NUM_SLICES 	100
+#define Y_MAX		2.0f
+static vec4 *light_points;
 
 #define ERROR_LOG(...) (fprintf(stderr, __VA_ARGS__))
 #define ELEMENTS_IN_ARRAY(_array) (sizeof((_array))/sizeof((_array[0])))
@@ -82,7 +80,7 @@ allocate_opengl_objects (void)
 	glGenBuffers(ELEMENTS_IN_ARRAY(vbo_id_light_point),
 				 vbo_id_light_point);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(light_point), light_point, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(light_points[0]) * NUM_SLICES, light_points, GL_STATIC_DRAW);
 
 	glGenVertexArrays(ELEMENTS_IN_ARRAY(vao_id_light_point),
 					  vao_id_light_point);
@@ -111,8 +109,39 @@ allocate_opengl_objects (void)
 static void
 generate_projection_matrix(void)
 {
+	/* Default perspective in 3D space is that the camera is
+	 * looking down the Z-Axis (-Z is further into the screen)
+	 */
 	glm_lookat((vec3){0, 0, 5.0f}, (vec3){0, 0, 0}, (vec3){0, 1.0f, 0}, view_matrix);
 	glm_perspective_default((640.0f/480.0f),  projection_matrix);
+}
+
+/* This represents the bounding cone for the tree */
+static float
+get_x_for_point (float y)
+{
+	/* ( y - b ) / m = x */
+	return (y - 2) / -2.0f;
+}
+
+static void
+generate_points(void)
+{
+	size_t i;
+
+	light_points = malloc(sizeof(light_points[0]) * NUM_SLICES);
+	if (light_points == NULL) {
+		ERROR_LOG("Failed to allocate space for points\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Start each one at a given y-value */
+	for (i = 0; i < NUM_SLICES; i++) {
+		light_points[i][1] = (Y_MAX/NUM_SLICES) * i;
+		light_points[i][0] = get_x_for_point(light_points[i][1]);
+		light_points[i][2] = 0.0f;
+		light_points[i][3] = 1.0f;
+	}
 }
 
 static void
@@ -144,7 +173,17 @@ clear_window (void)
 static void
 update_frame (uint32_t delta_ms)
 {
-
+	/* To render the christmas tree:
+	 * 1) Slice up the y-axis into discrete steps. Each one has a single point
+	 *	  in it's plane (or n points eqidistant from each other)
+	 * 2) Based on which slice this is, that determines how far away (r)
+	 *		from the y-axis the point is (r=mx+b) to find the bounding cone
+	 *      of the spiral.
+	 *    Each slice also is at a different position on the circle from the
+	 *      ones surrounding it.
+	 * 3) Each time step, update the points to move along the y-axis. Once
+	 *      a given point has surpassed a y-max, reset it to y=0 and continue.
+	 */
 }
 
 static void
@@ -155,7 +194,7 @@ render_frame (void)
 	/* Render here */
 	glEnableVertexAttribArray(get_vertex_attribute());
 	glBindVertexArray(vao_id_light_point[0]);
-	glDrawArrays(GL_POINTS, 0, ELEMENTS_IN_ARRAY(light_point));
+	glDrawArrays(GL_POINTS, 0, NUM_SLICES);
 
 	glDisableVertexAttribArray(get_vertex_attribute());
 }
@@ -229,6 +268,7 @@ main (int argc, char *argv[])
 	init_sdl();
 	init_opengl();
 	generate_projection_matrix();
+	generate_points();
 	initialize_shaders();
 	allocate_opengl_objects();
 
