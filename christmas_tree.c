@@ -142,6 +142,12 @@ clear_window (void)
 }
 
 static void
+update_frame (uint32_t delta_ms)
+{
+
+}
+
+static void
 render_frame (void)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -158,11 +164,21 @@ static void
 run_main_event_loop (void)
 {
 	bool loop = true;
+	uint32_t frame_start_ticks = 0;
+	uint32_t frame_end_ticks = 0;
+	uint32_t frame_delta_ticks = 0;
 
 	printf("Entering main loop\n");
 
 	while (loop) {
 		SDL_Event event;
+
+		/* Bump the delta in case the framerate is too fast */
+		if (frame_delta_ticks == 0) {
+			frame_delta_ticks = 1;
+		}
+
+		frame_start_ticks = SDL_GetTicks();
 
 		/* Process incoming events */
 		if (SDL_WaitEvent(&event) != 0) {
@@ -172,10 +188,14 @@ run_main_event_loop (void)
 		}
 
 		/* Render Frame */
+		update_frame(frame_delta_ticks);
 		render_frame();
 
 		/* Move the rendered buffer to the screen */
 		SDL_GL_SwapWindow(get_window());
+
+		frame_end_ticks = SDL_GetTicks();
+		frame_delta_ticks = frame_end_ticks - frame_start_ticks;
 	}
 
 	printf("Exiting...\n");
