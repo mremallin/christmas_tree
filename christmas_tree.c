@@ -128,7 +128,6 @@ init_opengl (void)
 	glEnable(GL_PROGRAM_POINT_SIZE);
 
 	generate_projection_matrix();
-	glm_mat4_print(projection_matrix, stdout);
 }
 
 static void
