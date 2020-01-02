@@ -150,8 +150,8 @@ update_point (vec4 point)
 	 * y=0, want the spiral to also start from x=1 -> cos(3x) to
 	 * know the x-component of the vertex.
 	 */
-	point[0] = r_clamp * cosf(NUM_ROTATIONS * 2.0f * point[1]);
-	point[2] = r_clamp * sinf(NUM_ROTATIONS * 2.0f * point[1]);
+	point[0] = r_clamp * cosf((NUM_ROTATIONS * 2.0f * point[1]));
+	point[2] = r_clamp * sinf((NUM_ROTATIONS * 2.0f * point[1]) + GLM_PI);
 }
 
 static void
@@ -232,9 +232,9 @@ render_frame (void)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	/* Update the GPU with latest vertex data */
+	glBindVertexArray(vao_id_light_point[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(light_points[0]) * NUM_SLICES, light_points, GL_DYNAMIC_DRAW);
 	glEnableVertexAttribArray(get_vertex_attribute());
-	glBindVertexArray(vao_id_light_point[0]);
 	glDrawArrays(GL_POINTS, 0, NUM_SLICES);
 
 	glDisableVertexAttribArray(get_vertex_attribute());
