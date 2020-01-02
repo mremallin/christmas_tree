@@ -31,10 +31,10 @@ static mat4 modelview_matrix = {
 };
 
 /* The vertex where the light point originates from */
-static GLfloat			 light_point[] = {
-	0.0f, 0.0f, 1.0f, 1.0f,
-	0.5f, 0.0f, 1.0f, 1.0f,
-	0.5f, 0.5f, 1.0f, 1.0f,
+static vec4 light_point[] = {
+	{0.0f, 0.0f, 1.0f, 1.0f},
+	{0.5f, 0.0f, 1.0f, 1.0f},
+	{0.5f, 0.5f, 1.0f, 1.0f},
 };
 
 #define ERROR_LOG(...) (fprintf(stderr, __VA_ARGS__))
@@ -193,7 +193,7 @@ render_frame (void)
 	/* Render here */
 	glEnableVertexAttribArray(get_vertex_attribute());
 	glBindVertexArray(vao_id_light_point[0]);
-	glDrawArrays(GL_TRIANGLES, 0, ELEMENTS_IN_ARRAY(light_point)/4);
+	glDrawArrays(GL_TRIANGLES, 0, ELEMENTS_IN_ARRAY(light_point));
 
 	glDisableVertexAttribArray(get_vertex_attribute());
 }
