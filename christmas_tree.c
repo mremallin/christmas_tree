@@ -150,7 +150,7 @@ render_frame (void)
 	/* Render here */
 	glEnableVertexAttribArray(get_vertex_attribute());
 	glBindVertexArray(vao_id_light_point[0]);
-	glDrawArrays(GL_TRIANGLES, 0, ELEMENTS_IN_ARRAY(light_point));
+	glDrawArrays(GL_POINTS, 0, ELEMENTS_IN_ARRAY(light_point));
 
 	glDisableVertexAttribArray(get_vertex_attribute());
 }
