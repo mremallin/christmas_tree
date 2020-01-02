@@ -7,6 +7,8 @@
 #define GL_GLEXT_PROTOTYPES 1
 #include <SDL2/SDL_opengl.h>
 
+#include <cglm/cglm.h>
+
 #include "shader.h"
 
 /* Variables related to SDL window and rendering */
@@ -21,11 +23,11 @@ static GLuint 			 vao_id_light_point[1] = {0};
 static GLfloat 			 projection_matrix[4*4] = {0};
 
 /* Just the identity matrix for now. */
-static GLfloat 			 modelview_matrix[4*4] = {
-	1.0f, 0.0f, 0.0f, 0.0f,
-	0.0f, 1.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f, 0.0f,
-	0.0f, 0.0f, 0.0f, 1.0f,
+static mat4 modelview_matrix = {
+	{1.0f, 0.0f, 0.0f, 0.0f},
+	{0.0f, 1.0f, 0.0f, 0.0f},
+	{0.0f, 0.0f, 1.0f, 0.0f},
+	{0.0f, 0.0f, 0.0f, 1.0f},
 };
 
 /* The vertex where the light point originates from */
@@ -105,7 +107,7 @@ allocate_opengl_objects (void)
 	glUniformMatrix4fv(get_vertex_uniform_projection(),
 					   1, GL_FALSE, projection_matrix);
 	glUniformMatrix4fv(get_vertex_uniform_modelview(),
-					   1, GL_FALSE, modelview_matrix);
+					   1, GL_FALSE, (GLfloat *)modelview_matrix);
 }
 
 static void
