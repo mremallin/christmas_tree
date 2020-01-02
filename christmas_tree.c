@@ -24,14 +24,15 @@ static mat4 projection_matrix;
 static mat4 view_matrix;
 
 /* The vertex where the light point originates from */
-#define NUM_SLICES 		(100)
+#define NUM_SLICES 		(50)
 /* Where to stop the tree at the top */
 #define Y_MAX			(2.0f)
 /* Number of rotations around the tree before hitting y-max */
-#define NUM_ROTATIONS 	(3)
+#define NUM_ROTATIONS 	(4)
 /* Time taken for a single point to go from bottom of the tree
  * to the top */
 #define Y_TIME_MS		(10000)
+/* delta y per unit time */
 #define Y_SPEED			((Y_MAX) / Y_TIME_MS)
 
 static vec4 *light_points;
@@ -124,7 +125,7 @@ generate_projection_matrix(void)
 	/* Default perspective in 3D space is that the camera is
 	 * looking down the Z-Axis (-Z is further into the screen)
 	 */
-	glm_lookat((vec3){0, 0, 5.0f}, (vec3){0, 0, 0}, (vec3){0, 1.0f, 0}, view_matrix);
+	glm_lookat((vec3){0.0f, 2.0f, 5.0f}, (vec3){0, 1.0f, 0}, (vec3){0, 1.0f, 0}, view_matrix);
 	glm_perspective_default((640.0f/480.0f),  projection_matrix);
 }
 

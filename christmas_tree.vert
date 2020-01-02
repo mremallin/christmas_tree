@@ -7,5 +7,5 @@ in vec4 a_Vertex;
 
 void main(void) {
 	gl_Position = projection_matrix * modelview_matrix * a_Vertex;
-	gl_PointSize = 3.0f;
+	gl_PointSize = 2.0f;
 }
