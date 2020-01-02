@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <math.h>
 
 #include <SDL2/SDL.h>
 #define GL_GLEXT_PROTOTYPES 1
@@ -16,12 +17,22 @@ static SDL_GLContext 	*main_opengl_context = NULL;
 static GLuint 			 vbo_id_light_point[1] = {0};
 static GLuint 			 vao_id_light_point[1] = {0};
 
-static GLfloat 			 projection_matrix[4*4];
-static GLfloat 			 modelview_matrix[4*4];
+/* Using perspective projection */
+static GLfloat 			 projection_matrix[4*4] = {0};
+
+/* Just the identity matrix for now. */
+static GLfloat 			 modelview_matrix[4*4] = {
+	1.0f, 0.0f, 0.0f, 0.0f,
+	0.0f, 1.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 0.0f, 1.0f,
+};
 
 /* The vertex where the light point originates from */
 static GLfloat			 light_point[] = {
-	0.0f, 0.0f, 0.0f
+	0.0f, 0.0f, 1.0f, 1.0f,
+	0.5f, 0.0f, 1.0f, 1.0f,
+	0.5f, 0.5f, 1.0f, 1.0f,
 };
 
 #define ERROR_LOG(...) (fprintf(stderr, __VA_ARGS__))
@@ -86,9 +97,61 @@ allocate_opengl_objects (void)
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[0]);
 	glVertexAttribPointer(get_vertex_attribute(),
-						  ELEMENTS_IN_ARRAY(light_point),
+						  4,
 					      GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(get_vertex_attribute());
+
+	/* Upload constant data to the shader */
+	glUniformMatrix4fv(get_vertex_uniform_projection(),
+					   1, GL_FALSE, projection_matrix);
+	glUniformMatrix4fv(get_vertex_uniform_modelview(),
+					   1, GL_FALSE, modelview_matrix);
+}
+
+static void
+dump_matrix (GLfloat *matrix)
+{
+	int i, j;
+
+	for (i = 0; i < 4; i++) {
+		for (j = 0; j < 4; j++) {
+			printf("%f ", matrix[4*i + j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+
+/*
+ * https://www.3dgep.com/understanding-the-view-matrix/#The_View_Matrix
+ * https://www.scratchapixel.com/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix/opengl-perspective-projection-matrix 
+ * https://solarianprogrammer.com/2013/05/22/opengl-101-matrices-projection-view-model/
+ */
+
+
+#define FOV_DEGREES 90.0f
+
+static void
+generate_projection_matrix(void)
+{
+	GLfloat near = -100.0f;
+	GLfloat far = 100.0f;
+	GLfloat scale = tan((M_PI / 180.0f) * FOV_DEGREES * 0.5f) * near;
+	GLfloat aspect_ratio = (640.0f / 480.0f);
+
+	GLfloat top = scale;
+	GLfloat bottom = -top;
+	GLfloat right = top * aspect_ratio;
+	GLfloat left = -right;
+
+	GLfloat local_projection_matrix[4*4] = {
+		(2 * near) / (right - left), 0.0f, 						  (right + left) / (right - left), 0.0f,
+		0.0f, 						 (2 * near) / (top - bottom), (top + bottom) / (top - bottom), 0.0f,
+		0.0f, 						 0.0f, 						  (-(far + near) / (far - near)),  ((-2.0f * far * near) / (far - near)),
+		0.0f, 						 0.0f, 						  -1.0f, 						   0.0f,
+	};
+
+	memcpy(projection_matrix, local_projection_matrix, sizeof(projection_matrix));
 }
 
 static void
@@ -103,10 +166,9 @@ init_opengl (void)
 	}
 
 	glEnable(GL_PROGRAM_POINT_SIZE);
-	glEnable(GL_DEPTH_TEST);
 
-	glGetFloatv(GL_MODELVIEW_MATRIX, modelview_matrix);
-	glGetFloatv(GL_PROJECTION_MATRIX, projection_matrix);
+	generate_projection_matrix();
+	dump_matrix(projection_matrix);
 }
 
 static void
@@ -114,23 +176,22 @@ clear_window (void)
 {
 	/* Clear both rendering buffers to black */
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
     SDL_GL_SwapWindow(get_window());
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
     SDL_GL_SwapWindow(get_window());
 }
 
 static void
 render_frame (void)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	/* Render here */
 	glEnableVertexAttribArray(get_vertex_attribute());
 	glBindVertexArray(vao_id_light_point[0]);
-	glPointSize(10.0f);
-	glDrawArrays(GL_POINTS, 0, 1);
+	glDrawArrays(GL_TRIANGLES, 0, ELEMENTS_IN_ARRAY(light_point)/4);
 
 	glDisableVertexAttribArray(get_vertex_attribute());
 }

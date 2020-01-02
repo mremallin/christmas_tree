@@ -11,6 +11,8 @@ static char *vertex_shader_source;
 static char *fragment_shader_source;
 
 static GLuint vertex_shader;
+static GLuint vs_uniform_projection_matrix;
+static GLuint vs_uniform_modelview_matrix;
 static GLuint vs_in_vertex;
 
 static GLuint fragment_shader;
@@ -20,6 +22,18 @@ GLuint
 get_vertex_attribute (void)
 {
 	return vs_in_vertex;
+}
+
+GLuint
+get_vertex_uniform_projection (void)
+{
+	return vs_uniform_projection_matrix;
+}
+
+GLuint
+get_vertex_uniform_modelview (void)
+{
+	return vs_uniform_modelview_matrix;
 }
 
 static char *
@@ -147,6 +161,8 @@ load_shader_to_gpu (void)
 
 	/* Attach inputs to the shader program */
 	vs_in_vertex = glGetAttribLocation(shader_program, "a_Vertex");
+	vs_uniform_modelview_matrix = glGetUniformLocation(shader_program, "modelview_matrix");
+	vs_uniform_projection_matrix = glGetUniformLocation(shader_program, "projection_matrix");
 }
 
 static void
