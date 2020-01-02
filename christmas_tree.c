@@ -20,22 +20,14 @@ static SDL_GLContext 	*main_opengl_context = NULL;
 static GLuint 			 vbo_id_light_point[1] = {0};
 static GLuint 			 vao_id_light_point[1] = {0};
 
-/* Using perspective projection */
 static mat4 projection_matrix;
-
-/* Just the identity matrix for now. */
-static mat4 modelview_matrix = {
-	{1.0f, 0.0f, 0.0f, 0.0f},
-	{0.0f, 1.0f, 0.0f, 0.0f},
-	{0.0f, 0.0f, 1.0f, 0.0f},
-	{0.0f, 0.0f, 0.0f, 1.0f},
-};
+static mat4 view_matrix;
 
 /* The vertex where the light point originates from */
 static vec4 light_point[] = {
-	{0.0f, 0.0f, 1.0f, 1.0f},
-	{0.5f, 0.0f, 1.0f, 1.0f},
-	{0.5f, 0.5f, 1.0f, 1.0f},
+	{0.0f, 0.0f, 0.0f, 1.0f},
+	{0.5f, 0.0f, 0.0f, 1.0f},
+	{0.5f, 0.5f, 0.0f, 1.0f},
 };
 
 #define ERROR_LOG(...) (fprintf(stderr, __VA_ARGS__))
@@ -96,8 +88,6 @@ allocate_opengl_objects (void)
 					  vao_id_light_point);
 	glBindVertexArray(vao_id_light_point[0]);
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[0]);
 	glVertexAttribPointer(get_vertex_attribute(),
 						  4,
@@ -108,7 +98,7 @@ allocate_opengl_objects (void)
 	glUniformMatrix4fv(get_vertex_uniform_projection(),
 					   1, GL_FALSE, (GLfloat *)projection_matrix);
 	glUniformMatrix4fv(get_vertex_uniform_modelview(),
-					   1, GL_FALSE, (GLfloat *)modelview_matrix);
+					   1, GL_FALSE, (GLfloat *)view_matrix);
 }
 
 /*
@@ -117,30 +107,11 @@ allocate_opengl_objects (void)
  * https://solarianprogrammer.com/2013/05/22/opengl-101-matrices-projection-view-model/
  */
 
-
-#define FOV_DEGREES 90.0f
-
 static void
 generate_projection_matrix(void)
 {
-	GLfloat near = -100.0f;
-	GLfloat far = 100.0f;
-	GLfloat scale = tan((M_PI / 180.0f) * FOV_DEGREES * 0.5f) * near;
-	GLfloat aspect_ratio = (640.0f / 480.0f);
-
-	GLfloat top = scale;
-	GLfloat bottom = -top;
-	GLfloat right = top * aspect_ratio;
-	GLfloat left = -right;
-
-	GLfloat local_projection_matrix[4*4] = {
-		(2 * near) / (right - left), 0.0f, 						  (right + left) / (right - left), 0.0f,
-		0.0f, 						 (2 * near) / (top - bottom), (top + bottom) / (top - bottom), 0.0f,
-		0.0f, 						 0.0f, 						  (-(far + near) / (far - near)),  ((-2.0f * far * near) / (far - near)),
-		0.0f, 						 0.0f, 						  -1.0f, 						   0.0f,
-	};
-
-	memcpy(projection_matrix, local_projection_matrix, sizeof(projection_matrix));
+	glm_lookat((vec3){0, 0, 5.0f}, (vec3){0, 0, 0}, (vec3){0, 1.0f, 0}, view_matrix);
+	glm_perspective_default((640.0f/480.0f),  projection_matrix);
 }
 
 static void
