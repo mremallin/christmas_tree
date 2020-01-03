@@ -102,9 +102,8 @@ set_opengl_attributes (void)
 }
 
 static void
-allocate_opengl_objects (void)
+upload_shader_constants (void)
 {
-	/* Upload constant data to the shader */
 	glUniformMatrix4fv(get_vertex_uniform_projection(),
 					   1, GL_FALSE, (GLfloat *)projection_matrix);
 	glUniformMatrix4fv(get_vertex_uniform_modelview(),
@@ -256,7 +255,7 @@ main (int argc, char *argv[])
 	generate_projection_matrix();
 	initialize_shaders();
 	init_spirals();
-	allocate_opengl_objects();
+	upload_shader_constants();
 
 	clear_window();
     run_main_event_loop();
