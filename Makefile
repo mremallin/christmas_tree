@@ -1,5 +1,12 @@
 CFLAGS=-Wall -Wpedantic $(shell sdl2-config --cflags) -g
-LIBRARIES=$(shell sdl2-config --libs) -lm -lGL
+LIBRARIES := $(shell sdl2-config --libs) -lm
+UNAME := $(shell uname -s)
+
+ifeq ($(UNAME), Darwin)
+	LIBRARIES += -framework OpenGL
+else ifeq ($(UNAME), Linux)
+	LIBRARIES += -lGL
+endif
 
 .DEFAULT_GOAL := all
 
