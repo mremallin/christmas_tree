@@ -11,34 +11,19 @@
 #include <cglm/io.h>
 
 #include "shader.h"
+#include "spiral.h"
 
 /* Variables related to SDL window and rendering */
 static SDL_Window 		*main_window = NULL;
 static SDL_GLContext 	main_opengl_context = NULL;
 
-/* Variables related to GPU data */
-static GLuint 			 vbo_id_light_point[1] = {0};
-static GLuint 			 vao_id_light_point[1] = {0};
-
 static mat4 projection_matrix;
 static mat4 view_matrix;
 
-/* The vertex where the light point originates from */
-#define NUM_SLICES 		(300)
-/* Where to stop the tree at the top */
-#define Y_MAX			(2.0f)
-/* Number of rotations around the tree before hitting y-max */
-#define NUM_ROTATIONS 	(4)
-/* Time taken for a single point to go from bottom of the tree
- * to the top */
-#define Y_TIME_MS		(50000)
-/* delta y per unit time */
-#define Y_SPEED			((Y_MAX) / Y_TIME_MS)
-
-static vec4 *light_points;
-
 #define ERROR_LOG(...) (fprintf(stderr, __VA_ARGS__))
 #define ELEMENTS_IN_ARRAY(_array) (sizeof((_array))/sizeof((_array[0])))
+
+static spiral rendered_spirals[5];
 
 static SDL_Window *
 get_window (void)
@@ -53,16 +38,40 @@ get_gl_context (void)
 }
 
 static void
+free_spirals(void)
+{
+	size_t i;
+
+	for (i = 0; i < ELEMENTS_IN_ARRAY(rendered_spirals); i++) {
+		spiral_free(rendered_spirals[i]);
+	}
+}
+
+static void
+init_spirals(void)
+{
+	size_t i;
+	spiral_init_ctx init_ctx = {
+		.num_slices = 100,
+		.num_rotations = 1,
+		.cycle_time_ms = 100000,
+		.y_max = 2.0f,
+	};
+
+	for (i = 0; i < ELEMENTS_IN_ARRAY(rendered_spirals); i++) {
+		rendered_spirals[i] = spiral_init(&init_ctx);
+		init_ctx.num_rotations += 1;
+		init_ctx.num_slices += 100;
+	}
+}
+
+static void
 at_exit (void)
 {
 	if (get_window()) {
 		deinit_shaders();
 
-		glDeleteBuffers(ELEMENTS_IN_ARRAY(vbo_id_light_point), vbo_id_light_point);
-
-		if (light_points) {
-			free(light_points);
-		}
+		free_spirals();
 
 		if (get_gl_context()) {
 			SDL_GL_DeleteContext(get_gl_context());
@@ -90,22 +99,6 @@ set_opengl_attributes (void)
 static void
 allocate_opengl_objects (void)
 {
-	/* These calls generate the Vertex Buffer Object (VBO) for GPU usage */
-	glGenBuffers(ELEMENTS_IN_ARRAY(vbo_id_light_point),
-				 vbo_id_light_point);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(light_points[0]) * NUM_SLICES, light_points, GL_DYNAMIC_DRAW);
-
-	glGenVertexArrays(ELEMENTS_IN_ARRAY(vao_id_light_point),
-					  vao_id_light_point);
-	glBindVertexArray(vao_id_light_point[0]);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_light_point[0]);
-	glVertexAttribPointer(get_vertex_attribute(),
-						  4,
-					      GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(get_vertex_attribute());
-
 	/* Upload constant data to the shader */
 	glUniformMatrix4fv(get_vertex_uniform_projection(),
 					   1, GL_FALSE, (GLfloat *)projection_matrix);
@@ -126,54 +119,8 @@ generate_projection_matrix(void)
 	/* Default perspective in 3D space is that the camera is
 	 * looking down the Z-Axis (-Z is further into the screen)
 	 */
-	glm_lookat((vec3){0.0f, 2.0f, 5.0f}, (vec3){0, 1.0f, 0}, (vec3){0, 1.0f, 0}, view_matrix);
+	glm_lookat((vec3){0.0f, 2.0f, 3.0f}, (vec3){0, 1.0f, 0}, (vec3){0, 1.0f, 0}, view_matrix);
 	glm_perspective_default((640.0f/480.0f),  projection_matrix);
-}
-
-/* This represents the bounding cone for the tree */
-static float
-get_r_for_point (float y)
-{
-	/* ( y - b ) / m = r */
-	return (y - 2) / -2.0f;
-}
-
-static void
-update_point (vec4 point)
-{
-	float r_clamp = get_r_for_point(point[1]);
-
-	/* Each one also gets rotated around the trunk.
-	 * 3 rotations from start to finish should make a decent tree.
-	 * The radius calculated above is the distance from the trunk
-	 * the point must be. Need to turn the radius into an (x, z)
-	 * coordinate to have it around the tree. Starting from
-	 * y=0, want the spiral to also start from x=1 -> cos(3x) to
-	 * know the x-component of the vertex.
-	 */
-	point[0] = r_clamp * cosf((NUM_ROTATIONS * 2.0f * point[1]));
-	point[2] = r_clamp * sinf((NUM_ROTATIONS * 2.0f * point[1]) + GLM_PI);
-}
-
-static void
-generate_points(void)
-{
-	size_t i;
-
-	light_points = malloc(sizeof(light_points[0]) * NUM_SLICES);
-	if (light_points == NULL) {
-		ERROR_LOG("Failed to allocate space for points\n");
-		exit(EXIT_FAILURE);
-	}
-
-	/* Initialize each poin making up the spiral */
-	for (i = 0; i < NUM_SLICES; i++) {
-		/* Start each one at a given y-value */
-		light_points[i][1] = (Y_MAX/NUM_SLICES) * i;
-		light_points[i][3] = 1.0f;
-
-		update_point(light_points[i]);
-	}
 }
 
 static void
@@ -205,40 +152,23 @@ clear_window (void)
 static void
 update_frame (uint32_t delta_ms)
 {
-	/* To render the christmas tree:
-	 * 1) Slice up the y-axis into discrete steps. Each one has a single point
-	 *	  in it's plane (or n points eqidistant from each other)
-	 * 2) Based on which slice this is, that determines how far away (r)
-	 *		from the y-axis the point is (r = (y-b)/m) to find the bounding cone
-	 *      of the spiral.
-	 *    Each slice also is at a different position on the circle from the
-	 *      ones surrounding it.
-	 * 3) Each time step, update the points to move along the y-axis. Once
-	 *      a given point has surpassed a y-max, reset it to y=0 and continue.
-	 */
 	size_t i;
 
-	for (i = 0; i < NUM_SLICES; i++) {
-		light_points[i][1] += Y_SPEED * delta_ms;
-		if (light_points[i][1] > Y_MAX) {
-			light_points[i][1] = 0.0f;
-		}
-		update_point(light_points[i]);
+	for (i = 0; i < ELEMENTS_IN_ARRAY(rendered_spirals); i++) {
+		spiral_update(rendered_spirals[i], delta_ms);
 	}
 }
 
 static void
 render_frame (void)
 {
+	size_t i;
+
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	/* Update the GPU with latest vertex data */
-	glBindVertexArray(vao_id_light_point[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(light_points[0]) * NUM_SLICES, light_points, GL_DYNAMIC_DRAW);
-	glEnableVertexAttribArray(get_vertex_attribute());
-	glDrawArrays(GL_POINTS, 0, NUM_SLICES);
-
-	glDisableVertexAttribArray(get_vertex_attribute());
+	for (i = 0; i < ELEMENTS_IN_ARRAY(rendered_spirals); i++) {
+		spiral_render(rendered_spirals[i]);
+	}
 }
 
 static void
@@ -312,8 +242,8 @@ main (int argc, char *argv[])
 	init_sdl();
 	init_opengl();
 	generate_projection_matrix();
-	generate_points();
 	initialize_shaders();
+	init_spirals();
 	allocate_opengl_objects();
 
 	clear_window();
