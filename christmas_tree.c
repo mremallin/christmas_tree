@@ -23,6 +23,9 @@ static mat4 view_matrix;
 #define ERROR_LOG(...) (fprintf(stderr, __VA_ARGS__))
 #define ELEMENTS_IN_ARRAY(_array) (sizeof((_array))/sizeof((_array[0])))
 
+#define WINDOW_WIDTH 1920.0f
+#define WINDOW_HEIGHT 1080.0f
+
 static spiral rendered_spirals[5];
 
 static SDL_Window *
@@ -120,7 +123,7 @@ generate_projection_matrix(void)
 	 * looking down the Z-Axis (-Z is further into the screen)
 	 */
 	glm_lookat((vec3){0.0f, 2.0f, 3.0f}, (vec3){0, 1.0f, 0}, (vec3){0, 1.0f, 0}, view_matrix);
-	glm_perspective_default((640.0f/480.0f),  projection_matrix);
+	glm_perspective_default((WINDOW_WIDTH/WINDOW_HEIGHT),  projection_matrix);
 }
 
 static void
@@ -194,6 +197,8 @@ run_main_event_loop (void)
 			frame_delta_ticks = 1;
 		}
 
+		printf("FPS: %3.3f\r", 1/(frame_delta_ticks*0.001f));
+
 		frame_start_ticks = SDL_GetTicks();
 
 		/* Process incoming events.
@@ -230,7 +235,7 @@ init_sdl (void)
 		exit(rc);
 	}
 
-	main_window = SDL_CreateWindow("Christmas Tree", 100, 100, 640, 480,
+	main_window = SDL_CreateWindow("Christmas Tree", 100, 100, WINDOW_WIDTH, WINDOW_HEIGHT,
 								   SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 	if (main_window == NULL) {
 		ERROR_LOG("SDL_CreateWindow failed: %s\n", SDL_GetError());
