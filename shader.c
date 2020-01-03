@@ -165,15 +165,9 @@ load_shader_to_gpu (void)
 	vs_uniform_projection_matrix = glGetUniformLocation(shader_program, "projection_matrix");
 }
 
-static void
-get_gl_matrices (void)
-{
-}
-
 void
 initialize_shaders (void)
 {
-	get_gl_matrices();
 	load_shaders();
 	compile_shaders();
 	link_shaders();
@@ -185,7 +179,7 @@ deinit_shaders (void)
 {
 	if (shader_program) {
 		glUseProgram(0);
-		/* No vertex attributes in use to cleanup */
+		/* No statically bound vertex attributes in use to cleanup */
 		glDetachShader(shader_program, vertex_shader);
 		glDetachShader(shader_program, fragment_shader);
 		glDeleteProgram(shader_program);
