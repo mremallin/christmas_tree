@@ -15,6 +15,7 @@ typedef struct spiral_ctx_ {
 	int num_rotations;
 	int cycle_time_ms;
 	float y_max;
+	float slope;
 
 	GLuint vbo_id;
 	GLuint vao_id;
@@ -23,10 +24,10 @@ typedef struct spiral_ctx_ {
 
 /* This represents the bounding cone for the tree */
 static float
-get_r_for_point (float y)
+get_r_for_point (spiral_ctx *ctx, float y)
 {
 	/* ( y - b ) / m = r */
-	return (y - 2) / -2.0f;
+	return (y - 2) / ctx->slope;
 }
 
 static float
@@ -38,7 +39,7 @@ get_y_speed (spiral_ctx *ctx)
 static void
 spiral_update_point (spiral_ctx *ctx, vec4 point)
 {
-	float r_clamp = get_r_for_point(point[1]);
+	float r_clamp = get_r_for_point(ctx, point[1]);
 
 	/* Each one also gets rotated around the trunk.
 	 * 3 rotations from start to finish should make a decent tree.
@@ -92,6 +93,7 @@ spiral_init(spiral_init_ctx *init)
 	ctx->num_rotations = init->num_rotations;
 	ctx->cycle_time_ms = init->cycle_time_ms;
 	ctx->y_max = init->y_max;
+	ctx->slope = init->slope;
 
 	ctx->verticies = malloc(sizeof(vec4) * ctx->num_slices);
 	assert(ctx->verticies);

@@ -10,6 +10,7 @@ typedef struct spiral_init_ctx_ {
 	int num_rotations;
 	int cycle_time_ms;
 	float y_max;
+	float slope;
 } spiral_init_ctx;
 
 spiral spiral_init(spiral_init_ctx *);

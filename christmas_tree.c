@@ -23,8 +23,8 @@ static mat4 view_matrix;
 #define ERROR_LOG(...) (fprintf(stderr, __VA_ARGS__))
 #define ELEMENTS_IN_ARRAY(_array) (sizeof((_array))/sizeof((_array[0])))
 
-#define WINDOW_WIDTH 1920.0f
-#define WINDOW_HEIGHT 1080.0f
+#define WINDOW_WIDTH 1280.0f
+#define WINDOW_HEIGHT 800.0f
 
 static spiral rendered_spirals[5];
 
@@ -59,12 +59,14 @@ init_spirals(void)
 		.num_rotations = 1,
 		.cycle_time_ms = 100000,
 		.y_max = 2.0f,
+		.slope = -2.5f,
 	};
 
 	for (i = 0; i < ELEMENTS_IN_ARRAY(rendered_spirals); i++) {
 		rendered_spirals[i] = spiral_init(&init_ctx);
 		init_ctx.num_rotations += 1;
 		init_ctx.num_slices += 100;
+		init_ctx.slope += 0.1f;
 	}
 }
 
@@ -221,7 +223,7 @@ run_main_event_loop (void)
 		frame_delta_ticks = frame_end_ticks - frame_start_ticks;
 	}
 
-	printf("Exiting...\n");
+	printf("\nExiting...\n");
 }
 
 static void
@@ -259,6 +261,10 @@ main (int argc, char *argv[])
 	clear_window();
     run_main_event_loop();
 
+    /* On Arch Linux, calling all the cleanup via at_exit was causing a
+     * double free due to GPU driver cleanup occurring before the
+     * registered at_exit. at_exit is called in the success path to fix this.
+     */
     at_exit();
 
 	return EXIT_SUCCESS;
