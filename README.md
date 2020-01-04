@@ -17,6 +17,7 @@ Run 'make' and then './christmas_tree'
 
 Notes
 -----
+ * Only tested on Mac/Linux
  * Defaults to 1280x800 window and is V-sync'd
  * Probably lots of room to optimize for lower powered platforms
 
