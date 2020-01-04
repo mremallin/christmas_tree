@@ -17,8 +17,7 @@ typedef struct spiral_ctx_ {
 	float y_max;
 	float slope;
 
-	/* 0 = verticies, 1 = color */
-	GLuint vbo_id[2];
+	GLuint vbo_id;
 	GLuint vao_id;
 	vec4 *verticies;
 	vec4 color;
@@ -71,17 +70,14 @@ spiral_init_verticies (spiral_ctx *ctx)
 static void
 spiral_init_opengl (spiral_ctx *ctx)
 {
-	glGenBuffers(2, ctx->vbo_id);
-	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id[0]);
+	glGenBuffers(1, &ctx->vbo_id);
+	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(ctx->verticies[0]) * ctx->num_slices, ctx->verticies, GL_DYNAMIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(ctx->color), ctx->color, GL_STATIC_DRAW);
 
 	glGenVertexArrays(1, &ctx->vao_id);
 	glBindVertexArray(ctx->vao_id);
 
-	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id);
 	glVertexAttribPointer(get_vertex_attribute(),
 	                      4,
 	                      GL_FLOAT, GL_FALSE, 0, 0);
@@ -146,13 +142,12 @@ spiral_render (spiral _ctx)
 {
 	spiral_ctx *ctx = _ctx;
 
-	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(ctx->verticies[0]) * ctx->num_slices, ctx->verticies, GL_DYNAMIC_DRAW);
 	glEnableVertexAttribArray(get_vertex_attribute());
 
 	glUniform4fv(get_color_uniform_attribute(),
 			     1, (GLfloat *)ctx->color);
-	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id[1]);
 
 	glBindVertexArray(ctx->vao_id);
 	glDrawArrays(GL_POINTS, 0, ctx->num_slices);
@@ -165,7 +160,7 @@ spiral_free(spiral _ctx)
 	spiral_ctx *ctx = _ctx;
 
 	glDeleteVertexArrays(1, &ctx->vao_id);
-	glDeleteBuffers(2, ctx->vbo_id);
+	glDeleteBuffers(1, &ctx->vbo_id);
 
 	free(ctx->verticies);
 }
