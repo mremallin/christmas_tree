@@ -15,6 +15,7 @@ typedef struct spiral_ctx_ {
 	int cycle_time_ms;
 	float y_max;
 	float slope;
+	float starting_angle_offset;
 
 	GLuint vbo_id;
 	GLuint vao_id;
@@ -49,8 +50,8 @@ spiral_update_point (spiral_ctx *ctx, vec4 point)
 	 * y=0, want the spiral to also start from x=1 -> cos(3x) to
 	 * know the x-component of the vertex.
 	 */
-	point[0] = r_clamp * cosf((ctx->num_rotations * 2.0f * point[1]));
-	point[2] = r_clamp * sinf((ctx->num_rotations * 2.0f * point[1]) + GLM_PI);
+	point[0] = r_clamp * cosf((ctx->num_rotations * 2.0f * point[1]) + ctx->starting_angle_offset);
+	point[2] = r_clamp * sinf((ctx->num_rotations * 2.0f * point[1]) + GLM_PI + ctx->starting_angle_offset);
 }
 
 static void
@@ -94,6 +95,7 @@ spiral_init(spiral_init_ctx *init)
 	ctx->cycle_time_ms = init->cycle_time_ms;
 	ctx->y_max = init->y_max;
 	ctx->slope = init->slope;
+	ctx->starting_angle_offset = init->starting_angle_offset;
 	memcpy(ctx->color, init->color, sizeof(ctx->color));
 
 	ctx->verticies = malloc(sizeof(vec4) * ctx->num_slices);

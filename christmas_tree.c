@@ -59,7 +59,8 @@ init_spirals(void)
 		.num_rotations = 1,
 		.cycle_time_ms = 100000,
 		.y_max = 2.0f,
-		.slope = -2.5f,
+		.slope = -3.0f,
+		.starting_angle_offset = 0.0f,
 	};
 
 	vec4 colors[5] = {
@@ -76,6 +77,7 @@ init_spirals(void)
 		init_ctx.num_rotations += 1;
 		init_ctx.num_slices += 100;
 		init_ctx.slope += 0.1f;
+		init_ctx.starting_angle_offset += GLM_PI_4;
 	}
 }
 
