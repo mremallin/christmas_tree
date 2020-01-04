@@ -27,7 +27,7 @@ typedef struct spiral_init_ctx_ {
 /** Initializes a spiral */
 spiral spiral_init(spiral_init_ctx *);
 
-/** Frees resources held by a spiral *?
+/** Frees resources held by a spiral */
 void spiral_free(spiral);
 
 /** Updates a given spiral based on the amount of time (ms) elapsed */

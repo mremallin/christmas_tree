@@ -26,7 +26,8 @@ static mat4 view_matrix;
 #define WINDOW_WIDTH 1280.0f
 #define WINDOW_HEIGHT 800.0f
 
-static spiral rendered_spirals[5];
+#define NUM_SPIRALS		4
+static spiral rendered_spirals[NUM_SPIRALS];
 
 static SDL_Window *
 get_window (void)
@@ -55,29 +56,30 @@ init_spirals(void)
 {
 	size_t i;
 	spiral_init_ctx init_ctx = {
-		.num_slices = 100,
-		.num_rotations = 1,
+		.num_slices = 400,
+		.num_rotations = 6,
 		.cycle_time_ms = 100000,
 		.y_max = 2.0f,
 		.slope = -3.0f,
 		.starting_angle_offset = 0.0f,
 	};
 
-	vec4 colors[5] = {
-		{0.466, 0.951, 0.927, 1.0},
-		{0.0f, 1.0f, 0.5f, 1.0f},
-		{1.0f, 0.2f, 0.2f, 1.0f},
-		{1.0f, 0.0f, 0.0f, 1.0f},
-		{0.0f, 1.0f, 0.8f, 1.0f}
+	vec4 colors[ELEMENTS_IN_ARRAY(rendered_spirals)] = {
+		{0.0f, 0.5f, 0.4f, 1.0f},
+		{0.0f, 1.0f, 0.8f, 1.0f},
+		{0.535f, 0.1f, 0.1f, 1.0f},
+		{1.0f, 0.2f, 0.2f, 1.0f}
 	};
 
-	for (i = 0; i < ELEMENTS_IN_ARRAY(rendered_spirals); i++) {
+	for (i = 0; i < ELEMENTS_IN_ARRAY(rendered_spirals); i += 2) {
 		memcpy(init_ctx.color, colors[i], sizeof(init_ctx.color));
 		rendered_spirals[i] = spiral_init(&init_ctx);
-		init_ctx.num_rotations += 1;
-		init_ctx.num_slices += 100;
+
 		init_ctx.slope += 0.1f;
-		init_ctx.starting_angle_offset += GLM_PI_4;
+		memcpy(init_ctx.color, colors[i+1], sizeof(init_ctx.color));
+		rendered_spirals[i+1] = spiral_init(&init_ctx);
+
+		init_ctx.starting_angle_offset += GLM_PI;
 	}
 }
 
@@ -134,7 +136,7 @@ generate_projection_matrix(void)
 	/* Default perspective in 3D space is that the camera is
 	 * looking down the Z-Axis (-Z is further into the screen)
 	 */
-	glm_lookat((vec3){0.0f, 2.0f, 3.0f}, (vec3){0, 1.0f, 0}, (vec3){0, 1.0f, 0}, view_matrix);
+	glm_lookat((vec3){0.0f, 1.0f, 3.0f}, (vec3){0, 1.0f, 0}, (vec3){0, 1.0f, 0}, view_matrix);
 	glm_perspective_default((WINDOW_WIDTH/WINDOW_HEIGHT),  projection_matrix);
 }
 
