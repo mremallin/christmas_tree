@@ -9,6 +9,7 @@
 
 #include "shader.h"
 
+/* Internal context to encapsulate a given spiral */
 typedef struct spiral_ctx_ {
 	int num_slices;
 	int num_rotations;

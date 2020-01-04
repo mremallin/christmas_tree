@@ -129,12 +129,13 @@ upload_shader_constants (void)
  * https://solarianprogrammer.com/2013/05/22/opengl-101-matrices-projection-view-model/
  * https://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/#transformation-matrices
  */
-
 static void
 generate_projection_matrix(void)
 {
 	/* Default perspective in 3D space is that the camera is
-	 * looking down the Z-Axis (-Z is further into the screen)
+	 * looking down the Z-Axis (-Z is further into the screen).
+	 * 
+	 * glm_lookat takes the following vectors: Eye, Center, Up
 	 */
 	glm_lookat((vec3){0.0f, 1.0f, 3.0f}, (vec3){0, 1.0f, 0}, (vec3){0, 1.0f, 0}, view_matrix);
 	glm_perspective_default((WINDOW_WIDTH/WINDOW_HEIGHT),  projection_matrix);
@@ -216,15 +217,14 @@ run_main_event_loop (void)
 		frame_start_ticks = SDL_GetTicks();
 
 		/* Process incoming events.
-		 * NOTE: This will chew up 100% CPU, need to find a better way
-		 * in order to not be busy while waiting to update. */
+		 * NOTE: This will chew up 100% CPU.
+		 * Would be nice to have a better way to wait between drawing frames */
 		if (SDL_PollEvent(&event) != 0) {
 			if (event.type == SDL_QUIT) {
 				loop = false;
 			}
 		}
 
-		/* Render Frame */
 		update_frame(frame_delta_ticks);
 		render_frame();
 
