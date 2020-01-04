@@ -27,7 +27,7 @@ static float
 get_r_for_point (spiral_ctx *ctx, float y)
 {
 	/* ( y - b ) / m = r */
-	return (y - 2) / ctx->slope;
+	return (y - ctx->y_max) / ctx->slope;
 }
 
 static float
