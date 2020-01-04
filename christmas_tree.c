@@ -236,8 +236,10 @@ init_sdl (void)
 		exit(rc);
 	}
 
-	main_window = SDL_CreateWindow("Christmas Tree", 100, 100, WINDOW_WIDTH, WINDOW_HEIGHT,
-								   SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+	main_window = SDL_CreateWindow("Christmas Tree",
+								   SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+								   WINDOW_WIDTH, WINDOW_HEIGHT,
+								   SDL_WINDOW_OPENGL);
 	if (main_window == NULL) {
 		ERROR_LOG("SDL_CreateWindow failed: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
