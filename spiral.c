@@ -6,7 +6,6 @@
 #include <SDL2/SDL.h>
 #define GL_GLEXT_PROTOTYPES 1
 #include <SDL2/SDL_opengl.h>
-#include <cglm/cglm.h>
 
 #include "shader.h"
 
@@ -95,10 +94,7 @@ spiral_init(spiral_init_ctx *init)
 	ctx->cycle_time_ms = init->cycle_time_ms;
 	ctx->y_max = init->y_max;
 	ctx->slope = init->slope;
-	ctx->color[0] = 0.466f;
-	ctx->color[1] = 0.951f;
-	ctx->color[2] = 0.927f;
-	ctx->color[3] = 1.0f;
+	memcpy(ctx->color, init->color, sizeof(ctx->color));
 
 	ctx->verticies = malloc(sizeof(vec4) * ctx->num_slices);
 	assert(ctx->verticies);

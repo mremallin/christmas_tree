@@ -60,6 +60,9 @@ init_spirals(void)
 		.cycle_time_ms = 100000,
 		.y_max = 2.0f,
 		.slope = -2.5f,
+		.color = {
+			0.466, 0.951, 0.927, 1.0
+		}
 	};
 
 	for (i = 0; i < ELEMENTS_IN_ARRAY(rendered_spirals); i++) {
@@ -67,6 +70,7 @@ init_spirals(void)
 		init_ctx.num_rotations += 1;
 		init_ctx.num_slices += 100;
 		init_ctx.slope += 0.1f;
+		init_ctx.color[0] += 0.1f;
 	}
 }
 

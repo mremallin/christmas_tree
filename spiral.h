@@ -2,6 +2,7 @@
 #define __SPIRAL_H__
 
 #include <stdint.h>
+#include <cglm/cglm.h>
 
 typedef void *spiral;
 
@@ -11,6 +12,7 @@ typedef struct spiral_init_ctx_ {
 	int cycle_time_ms;
 	float y_max;
 	float slope;
+	vec4 color;
 } spiral_init_ctx;
 
 spiral spiral_init(spiral_init_ctx *);
