@@ -60,17 +60,22 @@ init_spirals(void)
 		.cycle_time_ms = 100000,
 		.y_max = 2.0f,
 		.slope = -2.5f,
-		.color = {
-			0.466, 0.951, 0.927, 1.0
-		}
+	};
+
+	vec4 colors[5] = {
+		{0.466, 0.951, 0.927, 1.0},
+		{0.0f, 1.0f, 0.5f, 1.0f},
+		{1.0f, 0.2f, 0.2f, 1.0f},
+		{1.0f, 0.0f, 0.0f, 1.0f},
+		{0.0f, 1.0f, 0.8f, 1.0f}
 	};
 
 	for (i = 0; i < ELEMENTS_IN_ARRAY(rendered_spirals); i++) {
+		memcpy(init_ctx.color, colors[i], sizeof(init_ctx.color));
 		rendered_spirals[i] = spiral_init(&init_ctx);
 		init_ctx.num_rotations += 1;
 		init_ctx.num_slices += 100;
 		init_ctx.slope += 0.1f;
-		init_ctx.color[0] += 0.1f;
 	}
 }
 
