@@ -70,7 +70,7 @@ spiral_init_verticies (spiral_ctx *ctx)
 static void
 spiral_init_opengl (spiral_ctx *ctx)
 {
-	glGenBuffers(1, ctx->vbo_id);
+	glGenBuffers(2, ctx->vbo_id);
 	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(ctx->verticies[0]) * ctx->num_slices, ctx->verticies, GL_DYNAMIC_DRAW);
 
@@ -153,7 +153,7 @@ spiral_free(spiral _ctx)
 	spiral_ctx *ctx = _ctx;
 
 	glDeleteVertexArrays(1, &ctx->vao_id);
-	glDeleteBuffers(1, ctx->vbo_id);
+	glDeleteBuffers(2, ctx->vbo_id);
 
 	free(ctx->verticies);
 }
