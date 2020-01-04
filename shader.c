@@ -1,3 +1,10 @@
+/*
+ * Christmas Tree - Brought to you by SDL2 and OpenGL
+ * Inspired by: https://github.com/anvaka/atree#
+ *
+ * Mike Mallin, 2019 - 2020
+ */
+
 #define GL_GLEXT_PROTOTYPES 1
 #include <SDL2/SDL_opengl.h>
 
