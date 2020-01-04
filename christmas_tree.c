@@ -137,7 +137,7 @@ generate_projection_matrix(void)
 	 * 
 	 * glm_lookat takes the following vectors: Eye, Center, Up
 	 */
-	glm_lookat((vec3){0.0f, 1.0f, 3.0f}, (vec3){0, 1.0f, 0}, (vec3){0, 1.0f, 0}, view_matrix);
+	glm_lookat((vec3){0.0f, 1.0f, 3.0f}, (vec3){0, 0.92f, 0}, (vec3){0, 1.0f, 0}, view_matrix);
 	glm_perspective_default((WINDOW_WIDTH/WINDOW_HEIGHT),  projection_matrix);
 }
 
