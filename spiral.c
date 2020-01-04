@@ -21,6 +21,7 @@ typedef struct spiral_ctx_ {
 	GLuint vbo_id[2];
 	GLuint vao_id;
 	vec4 *verticies;
+	vec4 color;
 } spiral_ctx;
 
 /* This represents the bounding cone for the tree */
@@ -74,6 +75,9 @@ spiral_init_opengl (spiral_ctx *ctx)
 	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(ctx->verticies[0]) * ctx->num_slices, ctx->verticies, GL_DYNAMIC_DRAW);
 
+	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(ctx->color), ctx->color, GL_STATIC_DRAW);
+
 	glGenVertexArrays(1, &ctx->vao_id);
 	glBindVertexArray(ctx->vao_id);
 
@@ -95,6 +99,10 @@ spiral_init(spiral_init_ctx *init)
 	ctx->cycle_time_ms = init->cycle_time_ms;
 	ctx->y_max = init->y_max;
 	ctx->slope = init->slope;
+	ctx->color[0] = 0.466f;
+	ctx->color[1] = 0.951f;
+	ctx->color[2] = 0.927f;
+	ctx->color[3] = 1.0f;
 
 	ctx->verticies = malloc(sizeof(vec4) * ctx->num_slices);
 	assert(ctx->verticies);
@@ -139,10 +147,14 @@ spiral_render (spiral _ctx)
 	spiral_ctx *ctx = _ctx;
 
 	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id[0]);
-	glBindVertexArray(ctx->vao_id);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(ctx->verticies[0]) * ctx->num_slices, ctx->verticies, GL_DYNAMIC_DRAW);
-
 	glEnableVertexAttribArray(get_vertex_attribute());
+
+	glUniform4fv(get_color_uniform_attribute(),
+			     1, (GLfloat *)ctx->color);
+	glBindBuffer(GL_ARRAY_BUFFER, ctx->vbo_id[1]);
+
+	glBindVertexArray(ctx->vao_id);
 	glDrawArrays(GL_POINTS, 0, ctx->num_slices);
 	glDisableVertexAttribArray(get_vertex_attribute());
 }

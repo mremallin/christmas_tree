@@ -2,9 +2,9 @@
 
 uniform mat4 projection_matrix;
 uniform mat4 modelview_matrix;
+uniform vec4 a_Color;
 
 in vec4 a_Vertex;
-in vec4 a_Color;
 out vec4 frag_Color;
 
 void main(void) {
