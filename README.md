@@ -13,7 +13,9 @@ Requirements
 
 Build/Install
 -------------
-Run 'make' and then './christmas_tree'
+Run 'make' and then './christmas_tree'.
+
+Press 'q' to quit.
 
 Notes
 -----

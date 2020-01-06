@@ -228,6 +228,10 @@ run_main_event_loop (void)
 		if (SDL_PollEvent(&event) != 0) {
 			if (event.type == SDL_QUIT) {
 				loop = false;
+			} else if (event.type == SDL_KEYDOWN) {
+				if (event.key.keysym.sym == SDLK_q) {
+					loop = false;
+				}	
 			}
 		}
 
