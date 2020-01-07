@@ -1,7 +1,7 @@
 Christmas Tree
 ==============
 
-A neat little ornament, written in C with SDL2, OpenGL3.
+A neat little ornament, written in C with SDL2, OpenGL3. Inspired by: <https://github.com/anvaka/atree>
 
 ![Screenshot](https://github.com/mremallin/christmas_tree/raw/master/images/screenshot.png)
 
