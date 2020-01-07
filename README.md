@@ -3,6 +3,8 @@ Christmas Tree
 
 A neat little ornament, written in C with SDL2, OpenGL3.
 
+![Screenshot](https://github.com/mremallin/christmas_tree/raw/master/images/screenshot.png)
+
 Requirements
 ------------
  * Working C compiler
