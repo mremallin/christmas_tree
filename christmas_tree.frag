@@ -12,5 +12,5 @@ out vec4 outColor;
 
 void main (void)
 {
-  	outColor = frag_Color;
+    outColor = frag_Color;
 }
