@@ -15,7 +15,7 @@ in vec4 a_Vertex;
 out vec4 frag_Color;
 
 void main(void) {
-	gl_Position = projection_matrix * modelview_matrix * a_Vertex;
-	gl_PointSize = 1.5f;
-	frag_Color = a_Color;
+    gl_Position = projection_matrix * modelview_matrix * a_Vertex;
+    gl_PointSize = 1.5f;
+    frag_Color = a_Color;
 }
