@@ -29,190 +29,190 @@ static GLuint shader_program;
 GLuint
 get_vertex_attribute (void)
 {
-	return vs_in_vertex;
+    return vs_in_vertex;
 }
 
 GLuint
 get_color_uniform_attribute (void)
 {
-	return vs_uniform_color;
+    return vs_uniform_color;
 }
 
 GLuint
 get_vertex_uniform_projection (void)
 {
-	return vs_uniform_projection_matrix;
+    return vs_uniform_projection_matrix;
 }
 
 GLuint
 get_vertex_uniform_modelview (void)
 {
-	return vs_uniform_modelview_matrix;
+    return vs_uniform_modelview_matrix;
 }
 
 static char *
 file_to_buf (const char *file_name)
 {
-	FILE *f;
-	size_t length;
-	char *buffer;
+    FILE *f;
+    size_t length;
+    char *buffer;
 
-	f = fopen(file_name, "rb");
-	if (f == NULL) {
-		return NULL;
-	}
+    f = fopen(file_name, "rb");
+    if (f == NULL) {
+        return NULL;
+    }
 
-	/* Grab length of the file */
-	fseek(f, 0, SEEK_END);
-	length = ftell(f);
-	fseek(f, 0, SEEK_SET);
+    /* Grab length of the file */
+    fseek(f, 0, SEEK_END);
+    length = ftell(f);
+    fseek(f, 0, SEEK_SET);
 
-	/* Allocate new buffer and read */
-	buffer = malloc(length + 1);
-	assert(buffer);
+    /* Allocate new buffer and read */
+    buffer = malloc(length + 1);
+    assert(buffer);
 
-	fread(buffer, length, 1, f);
-	fclose(f);
-	buffer[length] = '\0';
+    fread(buffer, length, 1, f);
+    fclose(f);
+    buffer[length] = '\0';
 
-	return buffer;
+    return buffer;
 }
 
 static void
 load_shaders (void)
 {
-	vertex_shader_source = file_to_buf("christmas_tree.vert");
-	if (vertex_shader_source == NULL) {
-		fprintf(stderr, "Failed to load vertex shader\n");
-		exit(EXIT_FAILURE);
-	}
+    vertex_shader_source = file_to_buf("christmas_tree.vert");
+    if (vertex_shader_source == NULL) {
+        fprintf(stderr, "Failed to load vertex shader\n");
+        exit(EXIT_FAILURE);
+    }
 
-	fragment_shader_source = file_to_buf("christmas_tree.frag");
-	if (fragment_shader_source == NULL) {
-		fprintf(stderr, "Failed to load fragment shader\n");
-		exit(EXIT_FAILURE);
-	}
+    fragment_shader_source = file_to_buf("christmas_tree.frag");
+    if (fragment_shader_source == NULL) {
+        fprintf(stderr, "Failed to load fragment shader\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 static void
 compile_shaders (void)
 {
-	GLint is_compiled;
-	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_shader, 1, (const GLchar **)&vertex_shader_source, 0);
-	glCompileShader(vertex_shader);
+    GLint is_compiled;
+    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex_shader, 1, (const GLchar **)&vertex_shader_source, 0);
+    glCompileShader(vertex_shader);
 
-	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &is_compiled);
-	if (is_compiled == 0) {
-		int log_length;
-		char *compile_log;
-		glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &log_length);
+    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &is_compiled);
+    if (is_compiled == 0) {
+        int log_length;
+        char *compile_log;
+        glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &log_length);
 
-		compile_log = malloc(log_length);
-		assert(compile_log);
+        compile_log = malloc(log_length);
+        assert(compile_log);
 
-		glGetShaderInfoLog(vertex_shader, log_length, &log_length, compile_log);
+        glGetShaderInfoLog(vertex_shader, log_length, &log_length, compile_log);
 
-		fprintf(stderr, "Vertex shader compilation failure: %s\n", compile_log);
-		free(compile_log);
-		exit(EXIT_FAILURE);
-	}
+        fprintf(stderr, "Vertex shader compilation failure: %s\n", compile_log);
+        free(compile_log);
+        exit(EXIT_FAILURE);
+    }
 
-	fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader, 1, (const GLchar **)&fragment_shader_source, 0);
-	glCompileShader(fragment_shader);
+    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment_shader, 1, (const GLchar **)&fragment_shader_source, 0);
+    glCompileShader(fragment_shader);
 
-	glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &is_compiled);
-	if (is_compiled == 0) {
-		int log_length;
-		char *compile_log;
-		glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &log_length);
+    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &is_compiled);
+    if (is_compiled == 0) {
+        int log_length;
+        char *compile_log;
+        glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &log_length);
 
-		compile_log = malloc(log_length);
-		assert(compile_log);
+        compile_log = malloc(log_length);
+        assert(compile_log);
 
-		glGetShaderInfoLog(fragment_shader, log_length, &log_length, compile_log);
+        glGetShaderInfoLog(fragment_shader, log_length, &log_length, compile_log);
 
-		fprintf(stderr, "Fragment shader compilation failure: %s\n", compile_log);
-		free(compile_log);
-		exit(EXIT_FAILURE);	
-	}
+        fprintf(stderr, "Fragment shader compilation failure: %s\n", compile_log);
+        free(compile_log);
+        exit(EXIT_FAILURE); 
+    }
 }
 
 static void
 link_shaders (void)
 {
-	GLint is_linked;
+    GLint is_linked;
 
-	shader_program = glCreateProgram();
-	glAttachShader(shader_program, vertex_shader);
-	glAttachShader(shader_program, fragment_shader);
+    shader_program = glCreateProgram();
+    glAttachShader(shader_program, vertex_shader);
+    glAttachShader(shader_program, fragment_shader);
 
-	glLinkProgram(shader_program);
-	glGetProgramiv(shader_program, GL_LINK_STATUS, &is_linked);
+    glLinkProgram(shader_program);
+    glGetProgramiv(shader_program, GL_LINK_STATUS, &is_linked);
 
-	if (is_linked == 0) {
-		int log_length;
-		char *compile_log;
-		glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &log_length);
+    if (is_linked == 0) {
+        int log_length;
+        char *compile_log;
+        glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &log_length);
 
-		compile_log = malloc(log_length);
-		assert(compile_log);
+        compile_log = malloc(log_length);
+        assert(compile_log);
 
-		glGetProgramInfoLog(shader_program, log_length, &log_length, compile_log);
+        glGetProgramInfoLog(shader_program, log_length, &log_length, compile_log);
 
-		fprintf(stderr, "Shader program link failure: %s\n", compile_log);
-		free(compile_log);
-		exit(EXIT_FAILURE);	
-	}
+        fprintf(stderr, "Shader program link failure: %s\n", compile_log);
+        free(compile_log);
+        exit(EXIT_FAILURE); 
+    }
 }
 
 static void
 load_shader_to_gpu (void)
 {
-	/* Load to GPU */
-	glUseProgram(shader_program);
+    /* Load to GPU */
+    glUseProgram(shader_program);
 
-	/* Attach inputs to the shader program */
-	vs_in_vertex = glGetAttribLocation(shader_program, "a_Vertex");
-	vs_uniform_color = glGetUniformLocation(shader_program, "a_Color");
-	vs_uniform_modelview_matrix = glGetUniformLocation(shader_program, "modelview_matrix");
-	vs_uniform_projection_matrix = glGetUniformLocation(shader_program, "projection_matrix");
+    /* Attach inputs to the shader program */
+    vs_in_vertex = glGetAttribLocation(shader_program, "a_Vertex");
+    vs_uniform_color = glGetUniformLocation(shader_program, "a_Color");
+    vs_uniform_modelview_matrix = glGetUniformLocation(shader_program, "modelview_matrix");
+    vs_uniform_projection_matrix = glGetUniformLocation(shader_program, "projection_matrix");
 }
 
 void
 initialize_shaders (void)
 {
-	load_shaders();
-	compile_shaders();
-	link_shaders();
-	load_shader_to_gpu();
+    load_shaders();
+    compile_shaders();
+    link_shaders();
+    load_shader_to_gpu();
 }
 
 void
 deinit_shaders (void)
 {
-	if (shader_program) {
-		glUseProgram(0);
-		/* No statically bound vertex attributes in use to cleanup */
-		glDetachShader(shader_program, vertex_shader);
-		glDetachShader(shader_program, fragment_shader);
-		glDeleteProgram(shader_program);
-	}
+    if (shader_program) {
+        glUseProgram(0);
+        /* No statically bound vertex attributes in use to cleanup */
+        glDetachShader(shader_program, vertex_shader);
+        glDetachShader(shader_program, fragment_shader);
+        glDeleteProgram(shader_program);
+    }
 
-	if (fragment_shader != 0) {
-		glDeleteShader(fragment_shader);
-	}
+    if (fragment_shader != 0) {
+        glDeleteShader(fragment_shader);
+    }
 
-	if (vertex_shader != 0) {
-		glDeleteShader(vertex_shader);
-	}
+    if (vertex_shader != 0) {
+        glDeleteShader(vertex_shader);
+    }
 
-	if (fragment_shader_source) {
-		free(fragment_shader_source);
-	}
+    if (fragment_shader_source) {
+        free(fragment_shader_source);
+    }
 
-	if (vertex_shader_source) {
-		free(vertex_shader_source);
-	}
+    if (vertex_shader_source) {
+        free(vertex_shader_source);
+    }
 }
