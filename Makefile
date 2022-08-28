@@ -1,9 +1,10 @@
 CFLAGS=-Wall -Wpedantic $(shell sdl2-config --cflags) -g
-LIBRARIES := $(shell sdl2-config --libs) -lm
+LIBRARIES := $(shell sdl2-config --libs) -lm -lcglm
 UNAME := $(shell uname -s)
 
 ifeq ($(UNAME), Darwin)
-	LIBRARIES += -framework OpenGL
+	CFLAGS += -I/opt/homebrew/include
+	LIBRARIES += -framework OpenGL -L/opt/homebrew/lib
 else ifeq ($(UNAME), Linux)
 	LIBRARIES += -lGL
 endif
